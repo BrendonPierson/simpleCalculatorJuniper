@@ -27,12 +27,54 @@ namespace SimpleCalculatorTests
             Assert.AreEqual("+", parse.Operand);
         }
         [TestMethod]
+        public void ParseCanCheckIfFirstIsNegative()
+        {
+            Parse parse = new Parse("-1 + 2");
+            parse.CheckIfFirstArgIsNegative();
+            Assert.IsTrue(parse.FirstNeg);
+        }
+        [TestMethod]
+        public void ParseCanParseTwoNegativeNumbers()
+        {
+            Parse parse = new Parse("-1 + -2");
+            parse.CreateEquation();
+            Assert.AreEqual(-1, parse.FirstArg);
+            Assert.AreEqual(-2, parse.SecondArg);
+            Assert.AreEqual("+", parse.Operand);
+        }
+        [TestMethod]
         public void ParseCanGetArgs()
         {
             Parse parse = new Parse("1 + 2");
             parse.GetArgs();
             Assert.AreEqual(1, parse.FirstArg);
             Assert.AreEqual(2, parse.SecondArg);
+        }
+        [TestMethod]
+        public void ParseCanHaveNegativeFirstArg()
+        {
+            Parse parse = new Parse("-1 + 2");
+            parse.CheckIfFirstArgIsNegative();
+            parse.GetArgs();
+            parse.GetOperand();
+            Assert.AreEqual(-1, parse.FirstArg);
+            Assert.AreEqual(2, parse.SecondArg);
+        }
+        [TestMethod]
+        public void ParseCanRemoveNegSigns()
+        {
+            Parse parse = new Parse("-1 + -2");
+            parse.CheckIfFirstArgIsNegative();
+            parse.GetOperand();
+            Assert.AreEqual("1 + 2", parse.Input);
+        }
+        [TestMethod]
+        public void ParseCanSubtractNegatives()
+        {
+            Parse parse = new Parse("-1 - -2");
+            parse.CreateEquation();
+            Assert.AreEqual(-1, parse.FirstArg);
+            Assert.AreEqual(-2, parse.SecondArg);
         }
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
@@ -45,7 +87,7 @@ namespace SimpleCalculatorTests
         [ExpectedException(typeof(ArgumentException))]
         public void ParseTwoOperatorError()
         {
-            Parse parse = new Parse("1+ - 2");
+            Parse parse = new Parse("1+ *2");
             parse.GetOperand();
         }
         [TestMethod]
