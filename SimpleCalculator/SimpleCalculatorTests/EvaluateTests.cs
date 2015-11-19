@@ -63,5 +63,14 @@ namespace SimpleCalculatorTests
             var actual = eval.Compute();
             Assert.AreEqual(12, actual);
         }
+        [TestMethod]
+        public void EvaluateCanStoreCommands()
+        {
+            Parse parse = new Parse("3 + 9");
+            Evaluate eval = new Evaluate(parse.FirstArg, parse.SecondArg, parse.Operand);
+            eval.Compute();
+            Assert.AreEqual(12, eval.Commands.Last);
+            Assert.AreEqual("3+9", eval.Commands.Lastq);
+        }
     }
 }

@@ -11,21 +11,29 @@ namespace SimpleCalculator
         public int ArgOne { get; set; }
         public int ArgTwo { get; set; }
         public string Operation { get; set; }
+        private Stack commands;
+        public Stack Commands
+        {
+            get { return commands; }
+        }
 
 
-        public Evaluate() { }
+        public Evaluate() { commands = new Stack(); }
         public Evaluate(int argOne, int argTwo, string operation)
         {
             ArgOne = argOne;
             ArgTwo = argTwo;
             Operation = operation;
+            commands = new Stack();
         }
 
         public int Compute()
         {
+            commands.Lastq = ArgOne.ToString() + Operation + ArgTwo.ToString();
             switch (Operation)
             {
                 case "+":
+                    commands.Last = Add(ArgOne, ArgTwo);
                     return Add(ArgOne, ArgTwo);
                 case "-":
                     return Sub(ArgOne, ArgTwo);

@@ -21,6 +21,7 @@ namespace SimpleCalculator
         public Parse(string input)
         {
             Input = input;
+            CreateEquation();
         }
 
         public void CreateEquation()
