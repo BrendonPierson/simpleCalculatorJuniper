@@ -20,89 +20,108 @@ namespace SimpleCalculatorTests
             Assert.AreEqual("1 + 2", parse.Input);
         }
         [TestMethod]
-        public void ParseCanGetOperand()
+        public void ParseCanCheckForGoodInput()
         {
             Parse parse = new Parse("1 + 2");
-            parse.GetOperand();
+            Assert.IsTrue(parse.CheckInput());
+        }
+        [TestMethod]
+        public void ParseCheckForConstantAssignment()
+        {
+            Parse parse = new Parse("c =2");
+            parse.CheckForConstAssignment();
+            Assert.IsTrue(parse.IsConstantAssignment);
+        }
+        [TestMethod]
+        public void ParseCanFindCommands()
+        {
+            Parse parse = new Parse("last");
+            parse.CheckForCommand();
+            Assert.AreEqual("last", parse.Command);
+            Assert.IsTrue(parse.IsCommand);
+        }
+        [TestMethod]
+        public void ParseCanPullOutTwoArgumentNumbers()
+        {
+            Parse parse = new Parse("1 + -2");
+            parse.PullOutArguments();
+            Assert.AreEqual(1, parse.FirstNumArg);
+            Assert.AreEqual(-2, parse.SecondNumArg);
+        }
+        [TestMethod]
+        public void ParseCanPullOutnumberAndConstant()
+        {
+            Parse parse = new Parse("c + -2");
+            parse.PullOutArguments();
+            Assert.AreEqual("c", parse.FirstConstArg);
+            Assert.AreEqual(-2, parse.SecondNumArg);
+        }
+        [TestMethod]
+        public void ParseCanStoreOperator()
+        {
+            Parse parse = new Parse("1 + 2");
+            parse.GetOperator();
             Assert.AreEqual("+", parse.Operand);
         }
         [TestMethod]
-        public void ParseCanCheckIfFirstIsNegative()
+        public void ParseCanOperatorWithNegatives()
         {
-            Parse parse = new Parse("-1 + 2");
-            parse.CheckIfFirstArgIsNegative();
-            Assert.IsTrue(parse.FirstNeg);
-        }
-        [TestMethod]
-        public void ParseCanParseTwoNegativeNumbers()
-        {
-            Parse parse = new Parse("-1 + -2");
-            parse.CreateEquation();
-            Assert.AreEqual(-1, parse.FirstArg);
-            Assert.AreEqual(-2, parse.SecondArg);
-            Assert.AreEqual("+", parse.Operand);
-        }
-        [TestMethod]
-        public void ParseCanGetArgs()
-        {
-            Parse parse = new Parse("1 + 2");
-            parse.GetArgs();
-            Assert.AreEqual(1, parse.FirstArg);
-            Assert.AreEqual(2, parse.SecondArg);
-        }
-        [TestMethod]
-        public void ParseCanHaveNegativeFirstArg()
-        {
-            Parse parse = new Parse("-1 + 2");
-            parse.CheckIfFirstArgIsNegative();
-            parse.GetArgs();
-            parse.GetOperand();
-            Assert.AreEqual(-1, parse.FirstArg);
-            Assert.AreEqual(2, parse.SecondArg);
-        }
-        [TestMethod]
-        public void ParseCanRemoveNegSigns()
-        {
-            Parse parse = new Parse("-1 + -2");
-            parse.CheckIfFirstArgIsNegative();
-            parse.GetOperand();
-            Assert.AreEqual("1 + 2", parse.Input);
-        }
-        [TestMethod]
-        public void ParseCanSubtractNegatives()
-        {
-            Parse parse = new Parse("-1 - -2");
-            parse.CreateEquation();
-            Assert.AreEqual(-1, parse.FirstArg);
-            Assert.AreEqual(-2, parse.SecondArg);
+            Parse parse = new Parse("c = -2");
+            parse.GetOperator();
+            Assert.AreEqual("=", parse.Operand);
         }
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void ParseNoOperatorError()
         {
             Parse parse = new Parse("1 2");
-            parse.GetOperand();
+            parse.CheckInput();
         }
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void ParseTwoOperatorError()
         {
             Parse parse = new Parse("1+ *2");
-            parse.GetOperand();
+            parse.CheckInput();
         }
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void ParseOneArgumentError()
         {
             Parse parse = new Parse("1+");
-            parse.GetArgs();
+            parse.CheckInput();
         }
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void ParseThreeArgumentError()
         {
             Parse parse = new Parse("1 + 2 / 4");
-            parse.GetArgs();
+            parse.CheckInput();
+        }
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
+        public void ParseTwoLetterConstant()
+        {
+            Parse parse = new Parse("bb + 3");
+            parse.CheckInput();
+        }
+        [TestMethod]
+        public void ParseCanComputeAllNumVariables()
+        {
+            Parse parse = new Parse("-2 * 11");
+            parse.Compute();
+            Assert.AreEqual(-2, parse.FirstNumArg);
+            Assert.AreEqual("*", parse.Operand);
+            Assert.AreEqual(11, parse.SecondNumArg);
+        }
+        [TestMethod]
+        public void ParseCanComputeAllConstVariables()
+        {
+            Parse parse = new Parse("c - d");
+            parse.Compute();
+            Assert.AreEqual("c", parse.FirstConstArg);
+            Assert.AreEqual("-", parse.Operand);
+            Assert.AreEqual("d", parse.SecondConstArg);
         }
     }
 }

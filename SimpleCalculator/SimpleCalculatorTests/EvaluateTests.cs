@@ -14,63 +14,70 @@ namespace SimpleCalculatorTests
             Assert.IsNotNull(eval);
         }
         [TestMethod]
-        public void EvaluateCanAdd()
+        public void EvaluateCanInstantiateWithParseObj()
         {
-            Evaluate eval = new Evaluate();
-            int actual = eval.Add(5, 2);
-            Assert.AreEqual(7, actual);
+            Parse parse = new Parse("1 / 3");
+            parse.Compute();
+            Evaluate eval = new Evaluate(parse);
+            Assert.AreEqual(parse, eval.ParsedInput);
+            Assert.AreEqual(1, eval.ParsedInput.FirstNumArg);
         }
         [TestMethod]
-        public void EvaluateCanSubtract()
+        public void EvaluateCanReturnBlankExecuteCommand()
         {
-            Evaluate eval = new Evaluate();
-            int actual = eval.Sub(5, 2);
-            Assert.AreEqual(3, actual);
+            Parse parse = new Parse("lastq");
+            Evaluate eval = new Evaluate(parse);
+            eval.ExecuteCommand();
+            Assert.AreEqual("There are no commands stored.", eval.Answer);
         }
         [TestMethod]
-        public void EvaluateCanMultiply()
+        public void EvaluateCanReturnExecuteCommand()
         {
-            Evaluate eval = new Evaluate();
-            int actual = eval.Mult(5, 2);
-            Assert.AreEqual(10, actual);
+            Parse parse = new Parse("1 + 5");
+            Evaluate eval = new Evaluate(parse);
+            eval.Execute();
+            Parse parseTwo = new Parse("lastq");
+            eval.ParsedInput = parseTwo;
+            eval.Execute();
+            Assert.AreEqual("1 + 5", eval.Answer);
         }
         [TestMethod]
-        public void EvaluateCanDivide()
+        public void EvaluateCanAssignConstant()
         {
-            Evaluate eval = new Evaluate();
-            int actual = eval.Div(10, 2);
-            Assert.AreEqual(5, actual);
+            Parse parse = new Parse("q= 7");
+            Evaluate eval = new Evaluate(parse);
+            eval.Execute();
+            Assert.AreEqual("Stored: q = 7", eval.Answer);
         }
         [TestMethod]
-        public void EvaluateCanModulus()
+        public void EvaluateCanExecuteBasicOperation()
         {
-            Evaluate eval = new Evaluate();
-            int actual = eval.Mod(10, 2);
-            Assert.AreEqual(0, actual);
+            Parse parse = new Parse("1 + 5");
+            Evaluate eval = new Evaluate(parse);
+            eval.Execute();
+            Assert.AreEqual("6", eval.Answer);
         }
         [TestMethod]
-        public void EvaluateCanChooseCorrectOperation()
+        public void EvaluateCanSubstitueConstants()
         {
-            Evaluate eval = new Evaluate(3, 4, "+");
-            var actual = eval.Compute();
-            Assert.AreEqual(7, actual);
+            Parse parse = new Parse("q= 7");
+            Evaluate eval = new Evaluate(parse);
+            eval.Execute();
+            Parse parseTwo = new Parse("q + 5");
+            eval.ParsedInput = parseTwo;
+            eval.SubstituteConstants();
+            Assert.AreEqual(7, eval.ParsedInput.FirstNumArg);
         }
         [TestMethod]
-        public void EvaluateCanUseParsedString()
+        public void EvaluateCanExecuteExpressionWithConstants()
         {
-            Parse parse = new Parse("3 + 9");
-            Evaluate eval = new Evaluate(parse.FirstArg, parse.SecondArg, parse.Operand);
-            var actual = eval.Compute();
-            Assert.AreEqual(12, actual);
-        }
-        [TestMethod]
-        public void EvaluateCanStoreCommands()
-        {
-            Parse parse = new Parse("3 + 9");
-            Evaluate eval = new Evaluate(parse.FirstArg, parse.SecondArg, parse.Operand);
-            eval.Compute();
-            Assert.AreEqual(12, eval.Commands.Last);
-            Assert.AreEqual("3+9", eval.Commands.Lastq);
+            Parse parse = new Parse("q= 7");
+            Evaluate eval = new Evaluate(parse);
+            eval.Execute();
+            Parse parseTwo = new Parse("q + 5");
+            eval.ParsedInput = parseTwo;
+            eval.Execute();
+            Assert.AreEqual("12", eval.Answer);
         }
     }
 }

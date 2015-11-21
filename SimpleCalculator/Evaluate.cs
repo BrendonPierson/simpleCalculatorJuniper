@@ -8,66 +8,85 @@ namespace SimpleCalculator
 {
     public class Evaluate
     {
-        public int ArgOne { get; set; }
-        public int ArgTwo { get; set; }
-        public string Operation { get; set; }
-        private Stack commands;
-        public Stack Commands
+        private Memory mem;
+        private Operation op;
+        public Parse ParsedInput { get; set; }
+        public string Answer { get; set; }
+
+        public Evaluate()
         {
-            get { return commands; }
+            mem = new Memory();
+            op = new Operation();
+        }
+        public Evaluate(Parse parse)
+        {
+            ParsedInput = parse;
+            op = new Operation();
+            mem = new Memory();
+        }
+        
+        public void Execute()
+        {
+            if (ParsedInput.IsCommand)
+            {
+                ExecuteCommand();
+            } else if (ParsedInput.IsConstantAssignment)
+            {
+                mem.Lastq = ParsedInput.Input;
+                mem.AddConstant(ParsedInput.FirstConstArg, ParsedInput.SecondNumArg);
+                Answer = $"Stored: {ParsedInput.FirstConstArg} = {mem.Constants[ParsedInput.FirstConstArg]}";
+            } else
+            {
+                mem.Lastq = ParsedInput.Input;
+                Answer = Compute().ToString();
+            }
         }
 
-
-        public Evaluate() { commands = new Stack(); }
-        public Evaluate(int argOne, int argTwo, string operation)
+        public void ExecuteCommand()
         {
-            ArgOne = argOne;
-            ArgTwo = argTwo;
-            Operation = operation;
-            commands = new Stack();
+            switch (ParsedInput.Command)
+            {
+                case "last":
+                    Answer = mem.Last;
+                    break;
+                case "lastq":
+                    Answer = mem.Lastq;
+                    break;
+                case "exit":
+                    Answer = "exit";
+                    break;
+            }
+        }
+
+        public void SubstituteConstants()
+        {
+            if (ParsedInput.IsFirstConst)
+            {
+                ParsedInput.FirstNumArg = mem.Constants[ParsedInput.FirstConstArg];
+            }
+            if (ParsedInput.IsSecondConst)
+            {
+                ParsedInput.SecondNumArg = mem.Constants[ParsedInput.SecondConstArg];
+            }
         }
 
         public int Compute()
         {
-            commands.Lastq = ArgOne.ToString() + Operation + ArgTwo.ToString();
-            switch (Operation)
+            SubstituteConstants();
+            switch (ParsedInput.Operand)
             {
                 case "+":
-                    commands.Last = Add(ArgOne, ArgTwo);
-                    return Add(ArgOne, ArgTwo);
+                    return op.Add(ParsedInput.FirstNumArg, ParsedInput.SecondNumArg);
                 case "-":
-                    return Sub(ArgOne, ArgTwo);
+                    return op.Sub(ParsedInput.FirstNumArg, ParsedInput.SecondNumArg);
                 case "*":
-                    return Mult(ArgOne, ArgTwo);
+                    return op.Mult(ParsedInput.FirstNumArg, ParsedInput.SecondNumArg);
                 case "/":
-                    return Div(ArgOne, ArgTwo);
+                    return op.Div(ParsedInput.FirstNumArg, ParsedInput.SecondNumArg);
                 case "%":
-                    return Mod(ArgOne, ArgTwo);
-            }
+                    return op.Mod(ParsedInput.FirstNumArg, ParsedInput.SecondNumArg);
+            }   
             return 0;
-        }
-
-        
-
-        public int Add( int a, int b)
-        {
-            return a + b;
-        }
-        public int Sub(int a, int b)
-        {
-            return a - b;
-        }
-        public int Mult(int a, int b)
-        {
-            return a * b;
-        }
-        public int Div(int a, int b)
-        {
-            return a / b;
-        }
-        public int Mod(int a, int b)
-        {
-            return a % b;
         }
     }
 }

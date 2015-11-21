@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -10,79 +11,140 @@ namespace SimpleCalculator
     public class Parse
     {
         public string Input { get; set; }
-        public int FirstArg { get; set; }
-        public int SecondArg { get; set; }
+        public int FirstNumArg { get; set; }
+        public bool IsFirstConst { get; set; }
+        public string FirstConstArg { get; set; }
+        public int SecondNumArg { get; set; }
+        public bool IsSecondConst { get; set; }
+        public string SecondConstArg { get; set; }
+        public bool IsCommand { get; set; }
+        public string Command { get; set; }
         public string Operand { get; set; }
-        public bool FirstNeg { get; set; }
-        public bool SecondNeg { get; set; }
-        private char[] delimiters = new char[] { '+', '-', '*', '/', '%' };
+        public bool IsConstantAssignment { get; private set; }
 
         public Parse() { }
         public Parse(string input)
         {
             Input = input;
-            CreateEquation();
+            Compute();
         }
 
-        public void CreateEquation()
+        public void Compute()
         {
-            CheckIfFirstArgIsNegative();
-            GetOperand();
-            GetArgs();
+            CheckForCommand();
+            if (IsCommand) { return; }
+            CheckInput();
+            CheckForConstAssignment();
+            PullOutArguments();
+            GetOperator();
         }
 
-        public void CheckIfFirstArgIsNegative()
+        public void CheckForCommand()
         {
-            if (Input[0] == '-')
+            switch (Input.ToLower().Trim())
             {
-                FirstNeg = true;
-                Input = Input.Remove(0, 1);
+                case "last":
+                    IsCommand = true;
+                    Command = "last";
+                    break;
+                case "lastq":
+                    IsCommand = true;
+                    Command = "lastq";
+                    break;
+                case "exit":
+                    IsCommand = true;
+                    Command = "exit";
+                    break;
+                case "quit":
+                    IsCommand = true;
+                    Command = "exit";
+                    break;
+                default:
+                    IsCommand = false;
+                    break;
             }
         }
 
-        public void GetOperand()
-        {   
-            List<string> ops = new List<string>();
-            foreach(var c in Input)
+        public bool CheckForConstAssignment()
+        {
+            Regex regex = new Regex(@"[a-z]\s?=\s?-?\d+");
+            Match match = regex.Match(Input);
+            if (match.Success)
             {
-                if (delimiters.Contains(c))
+                IsConstantAssignment = true;
+            } else
+            {
+                IsConstantAssignment = false;
+            }
+            return IsConstantAssignment;
+        }
+
+        public bool CheckInput()
+        {
+            Regex regex = new Regex(@"^\s?(-?[a-z]|-?\d+)\s?[%\/\+\*=-]\s?(-?[a-z]|-?\d+)\s?$", RegexOptions.IgnoreCase);
+            Match match = regex.Match(Input);
+            if (!match.Success)
+            {
+                throw new ArgumentException();
+            }
+            return match.Success;
+        }
+
+        public void PullOutArguments()
+        {
+            Regex regex = new Regex(@"([a-z]|-?\d+)", RegexOptions.IgnoreCase);
+            Match match = regex.Match(Input);
+            if (match.Success)
+            {
+                StoreArgOne(match.Groups[1].Value);
+                match = match.NextMatch();
+                if (match.Success)
                 {
-                    ops.Add(c.ToString());
+                StoreArgTwo(match.Groups[1].Value);
                 }
-            }
+            } 
+        }
 
-            if(ops.Count == 1)
+        public void StoreArgOne(string s)
+        {
+            int num;
+            CultureInfo provider = CultureInfo.InvariantCulture;
+            bool result = int.TryParse(s, NumberStyles.AllowLeadingSign, provider, out num);
+            if (result)
             {
-                Operand = ops[0];
-            } else if(ops.Count == 2 && ops[1] == "-")
+                FirstNumArg = num;
+                IsFirstConst = false;
+            } else
             {
-                Operand = ops[0];
-                SecondNeg = true;
-                Input = Input.Remove(Input.IndexOf("-"),1);
-            } else 
-            {
-                throw new ArgumentException("Incorrect operator format");
+                FirstConstArg = s;
+                IsFirstConst = true;
             }
         }
 
-        public void GetArgs()
+        public void StoreArgTwo(string s)
         {
-            if(Input.Count() > 3)
+            int num;
+            CultureInfo provider = CultureInfo.InvariantCulture;
+            bool result = int.TryParse(s, NumberStyles.AllowLeadingSign, provider, out num);
+            if (result)
             {
-                string[] args = Input.Split(delimiters, StringSplitOptions.RemoveEmptyEntries).Select(a => a.Trim()).ToArray();
-                if (args.Count() == 2)
-                {
-                    FirstArg = FirstNeg ? -1 * int.Parse(args[0]) : int.Parse(args[0]);
-                    
-                    SecondArg = SecondNeg ? -1 * int.Parse(args[1]) : int.Parse(args[1]);
-                } else
-                {
-                    throw new ArgumentException("Incorrect equation format");
-                }
+                SecondNumArg = num;
+                IsSecondConst = false;
             }
             else
             {
-                throw new ArgumentException("Incorrect equation format");
+                SecondConstArg = s;
+                IsSecondConst = true;
+            }
+        }
+
+        public void GetOperator()
+        {
+            Regex regex = new Regex(@"[\d+|a-z]\s?([%\/\+\*=-])\s?-?[\d+|a-z]", RegexOptions.IgnoreCase);
+            Match match = regex.Match(Input);
+            if (match.Success)
+            {
+                Operand = match.Groups[1].Value;
             }
         }
     }
