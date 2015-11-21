@@ -11,6 +11,7 @@ namespace SimpleCalculator
     public class Parse
     {
         public string Input { get; set; }
+        public bool IsGoodInput { get; set; }
         public int FirstNumArg { get; set; }
         public bool IsFirstConst { get; set; }
         public string FirstConstArg { get; set; }
@@ -85,24 +86,28 @@ namespace SimpleCalculator
             Match match = regex.Match(Input);
             if (!match.Success)
             {
-                throw new ArgumentException();
+                IsGoodInput = false;
+            } else
+            {
+                IsGoodInput = true;
             }
             return match.Success;
         }
 
         public void PullOutArguments()
         {
-            Regex regex = new Regex(@"([a-z]|-?\d+)", RegexOptions.IgnoreCase);
-            Match match = regex.Match(Input);
-            if (match.Success)
+            Regex regexOne = new Regex(@"([a-z]|-?\d+)", RegexOptions.IgnoreCase);
+            Match matchOne = regexOne.Match(Input);
+            if (matchOne.Success)
             {
-                StoreArgOne(match.Groups[1].Value);
-                match = match.NextMatch();
-                if (match.Success)
-                {
-                StoreArgTwo(match.Groups[1].Value);
-                }
-            } 
+                StoreArgOne(matchOne.Groups[1].Value);
+            }
+            Regex regexTwo = new Regex(@"[%\/\+\*=-]\s?([a-z]|-?\d+)\s?$", RegexOptions.IgnoreCase);
+            Match matchTwo = regexTwo.Match(Input);
+            if (matchTwo.Success)
+            {
+                StoreArgTwo(matchTwo.Groups[1].Value);
+            }
         }
 
         public void StoreArgOne(string s)

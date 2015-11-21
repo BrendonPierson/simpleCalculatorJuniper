@@ -71,39 +71,39 @@ namespace SimpleCalculatorTests
             Assert.AreEqual("=", parse.Operand);
         }
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public void ParseNoOperatorError()
         {
             Parse parse = new Parse("1 2");
             parse.CheckInput();
+            Assert.IsFalse(parse.IsGoodInput);
         }
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public void ParseTwoOperatorError()
         {
             Parse parse = new Parse("1+ *2");
             parse.CheckInput();
+            Assert.IsFalse(parse.IsGoodInput);
         }
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public void ParseOneArgumentError()
         {
             Parse parse = new Parse("1+");
             parse.CheckInput();
+            Assert.IsFalse(parse.IsGoodInput);
         }
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public void ParseThreeArgumentError()
         {
             Parse parse = new Parse("1 + 2 / 4");
             parse.CheckInput();
+            Assert.IsFalse(parse.IsGoodInput);
         }
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public void ParseTwoLetterConstant()
         {
             Parse parse = new Parse("bb + 3");
             parse.CheckInput();
+            Assert.IsFalse(parse.IsGoodInput);
         }
         [TestMethod]
         public void ParseCanComputeAllNumVariables()
